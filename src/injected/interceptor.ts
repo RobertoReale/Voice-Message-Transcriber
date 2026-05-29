@@ -9,43 +9,58 @@ let isSilentMode = false;
 window.addEventListener('message', (event) => {
   if (event.data?.source === 'WA_TRANSCRIBER_CONTENT' && event.data?.type === 'SYNC_SILENT_MODE') {
     isSilentMode = !!event.data.silentMode;
+    // Update currently existing audio elements instantly
+    document.querySelectorAll('audio').forEach(audio => {
+      const src = audio.src || '';
+      if (src.startsWith('blob:') || (src.includes('cdn.discordapp.com') && src.includes('voice-message'))) {
+        audio.muted = isSilentMode;
+      }
+    });
   }
 });
 
 (function () {
+  // 1. Intercept `src` assignment to catch new voice messages
   const descriptor = Object.getOwnPropertyDescriptor(
     HTMLMediaElement.prototype,
     'src'
   );
-  if (!descriptor?.set) return;
-
-  Object.defineProperty(HTMLMediaElement.prototype, 'src', {
-    set(value: string) {
-      if (typeof value === 'string' && this instanceof HTMLAudioElement) {
-        // Explicitly set muted to true or false. 
-        // This ensures that if WhatsApp reuses the same audio element for a subsequent
-        // voice message after the user disabled Silent Mode, the audio is properly unmuted.
-        this.muted = isSilentMode;
-        
-        const isBlobAudio = value.startsWith('blob:');
-        const isDiscordVoice =
-          value.includes('cdn.discordapp.com') && value.includes('voice-message');
-        if (isBlobAudio || isDiscordVoice) {
-          window.postMessage(
-            {
-              source: 'WA_TRANSCRIBER',
-              type: 'AUDIO_SRC_SET',
-              blobUrl: value,
-            },
-            window.location.origin
-          );
+  if (descriptor?.set) {
+    Object.defineProperty(HTMLMediaElement.prototype, 'src', {
+      set(value: string) {
+        if (typeof value === 'string' && this instanceof HTMLAudioElement) {
+          const isBlobAudio = value.startsWith('blob:');
+          const isDiscordVoice =
+            value.includes('cdn.discordapp.com') && value.includes('voice-message');
+          if (isBlobAudio || isDiscordVoice) {
+            window.postMessage(
+              {
+                source: 'WA_TRANSCRIBER',
+                type: 'AUDIO_SRC_SET',
+                blobUrl: value,
+              },
+              window.location.origin
+            );
+          }
         }
+        descriptor.set!.call(this, value);
+      },
+      get() {
+        return descriptor.get!.call(this);
+      },
+      configurable: true,
+    });
+  }
+
+  // 2. Intercept `play()` to enforce mute state when the user actually hits play
+  const origPlay = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function () {
+    if (this instanceof HTMLAudioElement) {
+      const src = this.src || '';
+      if (src.startsWith('blob:') || (src.includes('cdn.discordapp.com') && src.includes('voice-message'))) {
+        this.muted = isSilentMode;
       }
-      descriptor.set!.call(this, value);
-    },
-    get() {
-      return descriptor.get!.call(this);
-    },
-    configurable: true,
-  });
+    }
+    return origPlay.call(this);
+  };
 })();

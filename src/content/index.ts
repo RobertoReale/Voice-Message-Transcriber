@@ -215,22 +215,17 @@ async function handleAudioBlob(blobUrl: string): Promise<void> {
   // "message channel closed" error that kills long transcriptions in MV3.
   stoppedByUser = false;
   setTranscribing(true);
-  const text = await new Promise<string>((resolve) => {
-    let settled = false;
-    const settle = (result: string) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      setTranscribing(false);
-      try { port.disconnect(); } catch { /* already disconnected */ }
-      resolve(result);
-    };
+    const text = await new Promise<string>((resolve) => {
+      let settled = false;
+      const settle = (result: string) => {
+        if (settled) return;
+        settled = true;
+        setTranscribing(false);
+        try { port.disconnect(); } catch { /* already disconnected */ }
+        resolve(result);
+      };
 
-    const port = chrome.runtime.connect({ name: 'transcriber' });
-    const timer = setTimeout(() => {
-      console.warn('[WA Transcriber] transcription timed out');
-      settle('');
-    }, 180_000);
+      const port = chrome.runtime.connect({ name: 'transcriber' });
 
     port.onMessage.addListener((msg: { type: string; text?: string }) => {
       if (msg.type === 'TRANSCRIBE_RESULT') settle(msg.text ?? '');
