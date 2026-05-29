@@ -9,6 +9,9 @@ import {
   notifyDownloadProgress,
   setTranscribing,
   showLanguagePromptInPanel,
+  addPendingEntry,
+  updatePendingEntry,
+  removePendingEntry,
 } from '../ui/panel';
 import { S } from '../shared/strings';
 import { STORAGE_KEYS, type ExtensionMessage } from '../shared/types';
@@ -215,6 +218,9 @@ async function handleAudioBlob(blobUrl: string): Promise<void> {
   // "message channel closed" error that kills long transcriptions in MV3.
   stoppedByUser = false;
   setTranscribing(true);
+  if (panel) {
+    addPendingEntry(panel, hash, S.inQueueBubble(durationLabel));
+  }
     const text = await new Promise<string>((resolve) => {
       let settled = false;
       const settle = (result: string) => {
@@ -241,6 +247,10 @@ async function handleAudioBlob(blobUrl: string): Promise<void> {
     port.postMessage({ type: 'TRANSCRIBE', pcmBase64, hash, returnTimestamps });
   });
 
+  if (panel) {
+    removePendingEntry(panel, hash);
+  }
+
   if (text) {
     stoppedByUser = false;
     addTranscription(panel, text);
@@ -261,7 +271,11 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
     showStatus(S.downloadingModel(message.progress));
     notifyDownloadProgress(message.progress);
   } else if (message.type === 'STATUS_UPDATE') {
-    showStatus(message.status);
+    if ((message as any).hash && panel) {
+      updatePendingEntry(panel, (message as any).hash, message.status);
+    } else {
+      showStatus(message.status);
+    }
   } else if (message.type === 'MODEL_LOADED') {
     notifyModelLoaded(message.modelId);
   } else if (message.type === 'MODEL_DELETED') {

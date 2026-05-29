@@ -236,7 +236,6 @@ export function createSettings(): SettingsArea {
   }
 
   const timestampsToggle = createToggle(S.labelTimestamps, STORAGE_KEYS.enableTimestamps);
-  const silentModeToggle = createToggle(S.labelSilentMode, STORAGE_KEYS.silentMode);
 
   // ── Load persisted state ─────────────────────────────────────────
   void chrome.storage.local.get([
@@ -244,7 +243,6 @@ export function createSettings(): SettingsArea {
     STORAGE_KEYS.selectedLanguage,
     STORAGE_KEYS.downloadedModels,
     STORAGE_KEYS.enableTimestamps,
-    STORAGE_KEYS.silentMode,
   ]).then((res) => {
     const rawModel = res[STORAGE_KEYS.selectedModel] as string | undefined;
     const savedModel: ModelId = MODEL_IDS.includes(rawModel as ModelId)
@@ -256,7 +254,6 @@ export function createSettings(): SettingsArea {
     for (const id of downloaded) downloadedModelIds.add(id);
     langSelect.value = savedLang;
     timestampsToggle.checked = !!res[STORAGE_KEYS.enableTimestamps];
-    silentModeToggle.checked = !!res[STORAGE_KEYS.silentMode];
     setActiveModel(savedModel); // also calls updateDownloadButton
   });
 

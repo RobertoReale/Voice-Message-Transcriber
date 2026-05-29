@@ -41,7 +41,7 @@ export const S = {
     `Audio is very quiet (${dur}) — transcription may be inaccurate`,
   sendingToWhisper: (dur: string) => `Audio ${dur} — sending to Whisper...`,
   modelNotReady: 'Model not ready — open settings to download it first',
-  noTextInVoice: 'No text detected in voice message',
+  noTextInVoice: 'Voice message contains no speech.',
   transcriptionFailed: 'Transcription failed',
   downloadingModel: (pct: number) => `Downloading Whisper model: ${pct}%`,
 
@@ -49,6 +49,8 @@ export const S = {
   loadingModel: (label: string) => `Loading ${label}...`,
   modelReady: 'Model ready ✓',
   downloadError: (msg: string) => `Download error: ${msg}`,
+  inQueueBubble: (dur: string) => `⏳ In queue... (${dur})`,
+  transcribingBubble: 'Transcribing...',
   transcribing: (label: string) =>
     `Transcribing with ${label} (this may take a minute)...`,
   noiseOnly: (text: string) =>

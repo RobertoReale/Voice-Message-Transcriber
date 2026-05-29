@@ -7,6 +7,9 @@ import {
   showStatusInPanel as showStatus,
   clearEntries,
   copyAllTexts,
+  addPendingEntry,
+  updatePendingEntry,
+  removePendingEntry,
 } from './transcriptions';
 import { S } from '../shared/strings';
 import { STORAGE_KEYS } from '../shared/types';
@@ -288,7 +291,13 @@ export function notifyModelLoadFailed(modelId: string): void {
 }
 
 // Re-export sub-module functions with the signatures the content script expects.
-export { addEntry as addTranscription, showStatus as showStatusInPanel };
+export {
+  addEntry as addTranscription,
+  showStatus as showStatusInPanel,
+  addPendingEntry,
+  updatePendingEntry,
+  removePendingEntry,
+};
 
 // ── Internal helpers ───────────────────────────────────────────────────
 

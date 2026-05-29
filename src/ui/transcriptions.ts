@@ -123,6 +123,61 @@ export function showStatusInPanel(container: HTMLElement, msg: string): void {
   status.textContent = msg;
 }
 
+export function addPendingEntry(container: HTMLElement, hash: string, text: string): void {
+  if (container.style.display === 'none') container.style.display = '';
+
+  const content = getContent(container);
+  const emptyEl = content.querySelector<HTMLElement>('#wa-tr-empty');
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  const entry = document.createElement('div');
+  entry.className = 'wa-tr-entry wa-tr-entry--pending';
+  entry.dataset.hash = hash;
+
+  const meta = document.createElement('div');
+  meta.className = 'wa-tr-entry-meta';
+
+  const hint = document.createElement('span');
+  hint.className = 'wa-tr-entry-hint';
+  hint.textContent = '...';
+  meta.append(hint);
+
+  const textEl = document.createElement('div');
+  textEl.className = 'wa-tr-text';
+  textEl.style.opacity = '0.6';
+  textEl.style.fontStyle = 'italic';
+  textEl.textContent = text;
+
+  entry.append(meta, textEl);
+
+  const statusEl = content.querySelector<HTMLElement>('#wa-tr-status');
+  if (statusEl) {
+    content.insertBefore(entry, statusEl);
+  } else {
+    content.appendChild(entry);
+  }
+
+  requestAnimationFrame(() => {
+    content.scrollTop = content.scrollHeight;
+  });
+}
+
+export function updatePendingEntry(container: HTMLElement, hash: string, text: string): void {
+  const content = getContent(container);
+  const entry = content.querySelector<HTMLElement>(`.wa-tr-entry--pending[data-hash="${hash}"]`);
+  if (!entry) return;
+  const textEl = entry.querySelector<HTMLElement>('.wa-tr-text');
+  if (textEl) {
+    textEl.textContent = text;
+  }
+}
+
+export function removePendingEntry(container: HTMLElement, hash: string): void {
+  const content = getContent(container);
+  const entry = content.querySelector<HTMLElement>(`.wa-tr-entry--pending[data-hash="${hash}"]`);
+  if (entry) entry.remove();
+}
+
 /**
  * Remove all transcription entries and restore the empty state.
  *

@@ -24,6 +24,8 @@ Transcription runs locally using [Whisper](https://openai.com/research/whisper) 
 - **Three Whisper models** — Tiny (~40 MB), Small (~130 MB, default), Large v3 Turbo (~800 MB)
 - **14 languages** — plus auto-detect
 - **Model management** — download and delete models directly from the settings panel
+- **Visual Queue** — placeholder bubbles indicate which queued voice messages are waiting to be processed
+- **Pause** — temporarily disable the extension from processing new voice messages, while keeping it active
 - **Silent Mode** — automatically mute the voice message while transcribing
 - **Export** — save all transcriptions to a text file
 - **Timestamps** — optional [MM:SS] markers in the text
@@ -138,6 +140,7 @@ Models are fetched from Hugging Face via transformers.js and stored in the brows
 | `onnx-community/whisper-large-v3-turbo` | q4 | ~800 MB | most accurate |
 
 WebGPU is intentionally disabled — ONNX Runtime WebGPU has numerical overflow issues with q4 models on Windows, causing Whisper to hallucinate `[Music]` instead of speech. WASM inference uses up to 4 threads when `SharedArrayBuffer` is available.
+*(Note: You can track the progress of the WebGPU fix in the [Transformers.js issue tracker](https://github.com/huggingface/transformers.js/issues). Once resolved, the extension can be updated to support WebGPU for a massive speed boost).*
 
 Key inference settings that reduce hallucinations and repetition loops:
 

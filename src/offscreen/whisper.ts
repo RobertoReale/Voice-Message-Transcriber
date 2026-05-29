@@ -262,7 +262,7 @@ let stopRequested = false;
 
 chrome.runtime.onMessage.addListener(
   (
-    message: { type: string; pcmBase64?: string; model?: string; language?: string; modelId?: string; returnTimestamps?: boolean },
+    message: { type: string; pcmBase64?: string; model?: string; language?: string; modelId?: string; returnTimestamps?: boolean; hash?: string },
     _sender,
     sendResponse
   ) => {
@@ -318,6 +318,7 @@ chrome.runtime.onMessage.addListener(
           void chrome.runtime.sendMessage({
             type: 'STATUS_UPDATE',
             status: S.transcribing(config.label),
+            hash: message.hash,
           });
 
           const startMs = Date.now();
