@@ -12,6 +12,7 @@ export const S = {
   emptyHint2: 'to see it transcribed here',
 
   // Header button tooltips
+  tipExport: 'Export transcriptions to file',
   tipCopyAll: 'Copy all transcriptions',
   tipClearList: 'Clear visible transcriptions (cache is preserved)',
   tipClearCache: 'Clear cache — allows re-transcribing the same audio',
@@ -22,6 +23,8 @@ export const S = {
   // Settings
   labelModel: 'WHISPER MODEL',
   labelLanguage: 'TRANSCRIPTION LANGUAGE',
+  labelTimestamps: 'Show timestamps in transcription',
+  labelSilentMode: 'Silent Mode (mute audio while transcribing)',
   settingsNote: 'ℹ The new model will be used from the next transcription',
   downloadModel: '⬇ Download / load selected model',
   modelDownloaded: '✓ Model ready',

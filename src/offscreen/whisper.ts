@@ -158,7 +158,21 @@ async function getTranscriber(modelId: ModelId): Promise<TranscriberPipeline> {
 const HALLUCINATION_RE =
   /^[\s\[\(]*((music|musica|applause|applausi|laughter|risate|silence|silenzio|noise|rumore|sfondo|background)[^\])\w]*)[\s\]\)]*$/i;
 
-function extractText(result: unknown): string {
+function formatTimestamp(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+function extractText(result: any, returnTimestamps: boolean): string {
+  if (returnTimestamps && result.chunks) {
+    return result.chunks.map((c: any) => {
+      const start = formatTimestamp(c.timestamp[0] ?? 0);
+      const end = c.timestamp[1] !== null && c.timestamp[1] !== undefined ? formatTimestamp(c.timestamp[1]) : '...';
+      return `[${start} - ${end}] ${c.text.trim()}`;
+    }).join('\n');
+  }
+
   const raw = Array.isArray(result)
     ? (result as { text: string }[]).map((r) => r.text).join(' ')
     : (result as { text: string }).text;
@@ -248,7 +262,7 @@ let stopRequested = false;
 
 chrome.runtime.onMessage.addListener(
   (
-    message: { type: string; pcmBase64?: string; model?: string; language?: string; modelId?: string },
+    message: { type: string; pcmBase64?: string; model?: string; language?: string; modelId?: string; returnTimestamps?: boolean },
     _sender,
     sendResponse
   ) => {
@@ -311,7 +325,7 @@ chrome.runtime.onMessage.addListener(
             ...(language ? { language } : {}),
             ...chunkingOptions,
             task: 'transcribe',
-            return_timestamps: false,
+            return_timestamps: !!message.returnTimestamps,
             condition_on_prev_tokens: false,
             num_beams: 1,
             temperature: 0,
@@ -329,7 +343,9 @@ chrome.runtime.onMessage.addListener(
             return;
           }
 
-          const text = deduplicateRepetitions(extractText(result));
+          const text = message.returnTimestamps
+            ? extractText(result, true)
+            : deduplicateRepetitions(extractText(result, false));
           console.log('[WA Transcriber] Extracted text:', JSON.stringify(text));
 
           if (!text || HALLUCINATION_RE.test(text)) {

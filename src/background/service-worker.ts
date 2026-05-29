@@ -112,7 +112,8 @@ async function broadcastToWaTabs(message: ExtensionMessage): Promise<void> {
 async function sendToOffscreen(
   pcmBase64: string,
   modelId: string,
-  language: string
+  language: string,
+  returnTimestamps?: boolean
 ): Promise<string> {
   // Retry a few times in case the offscreen document's listener isn't
   // registered yet (race window right after createDocument resolves).
@@ -123,6 +124,7 @@ async function sendToOffscreen(
         pcmBase64,
         model: modelId,
         language,
+        returnTimestamps,
       })) as string | undefined;
       return text ?? '';
     } catch (err) {
@@ -145,7 +147,7 @@ async function sendToOffscreen(
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'transcriber') return;
 
-  port.onMessage.addListener(async (message: { type: string; pcmBase64?: string; hash?: string }) => {
+  port.onMessage.addListener(async (message: { type: string; pcmBase64?: string; hash?: string; returnTimestamps?: boolean }) => {
     if (message.type !== 'TRANSCRIBE') return;
 
     await setupOffscreenDocument();
@@ -169,7 +171,7 @@ chrome.runtime.onConnect.addListener((port) => {
 
     let text = '';
     try {
-      text = await sendToOffscreen(message.pcmBase64!, modelId, language);
+      text = await sendToOffscreen(message.pcmBase64!, modelId, language, message.returnTimestamps);
       console.log('[WA Transcriber SW] Offscreen response:', JSON.stringify(text));
     } catch (err) {
       if (String(err).includes('message channel closed')) {

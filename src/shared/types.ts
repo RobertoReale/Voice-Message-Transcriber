@@ -47,14 +47,16 @@ export const STORAGE_KEYS = {
   downloadedModels: 'downloadedModels',
   /** Last known panel position { left: string, top: string } in CSS px values. */
   panelPosition: 'panelPosition',
+  enableTimestamps: 'enableTimestamps',
+  silentMode: 'silentMode',
 } as const;
 
 // ── Extension messages (discriminated union) ───────────────────────────
 
 export type ExtensionMessage =
   | { type: 'TOGGLE_PANEL' }
-  | { type: 'TRANSCRIBE'; pcmBase64: string; hash: string }
-  | { type: 'WHISPER_TRANSCRIBE'; pcmBase64: string; model: string; language?: string }
+  | { type: 'TRANSCRIBE'; pcmBase64: string; hash: string; returnTimestamps?: boolean }
+  | { type: 'WHISPER_TRANSCRIBE'; pcmBase64: string; model: string; language?: string; returnTimestamps?: boolean }
   | { type: 'WHISPER_PRELOAD'; model: string }
   | { type: 'WHISPER_STOP' }
   | { type: 'WHISPER_UNLOAD'; modelId: string }

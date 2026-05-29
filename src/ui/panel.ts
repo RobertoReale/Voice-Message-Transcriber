@@ -69,6 +69,7 @@ export function initPanel(): HTMLElement {
   title.className = 'wa-tr-title';
   title.textContent = S.title;
 
+  const exportBtn   = iconBtn('💾', S.tipExport);
   const copyAllBtn  = iconBtn('📋', S.tipCopyAll);
   const clearListBtn = iconBtn('🗑', S.tipClearList);
   const clearCacheBtn = iconBtn('↺', S.tipClearCache);
@@ -84,7 +85,7 @@ export function initPanel(): HTMLElement {
 
   const btnGroup = document.createElement('div');
   btnGroup.className = 'wa-tr-btn-group';
-  btnGroup.append(stopBtnEl, copyAllBtn, clearListBtn, clearCacheBtn, settingsBtn, closeBtn);
+  btnGroup.append(stopBtnEl, exportBtn, copyAllBtn, clearListBtn, clearCacheBtn, settingsBtn, closeBtn);
 
   header.append(title, btnGroup);
 
@@ -115,6 +116,21 @@ export function initPanel(): HTMLElement {
     if (contentEl) {
       contentEl.style.display = visible ? 'none' : '';
     }
+  });
+
+  exportBtn.addEventListener('click', () => {
+    const texts = copyAllTexts(panel!);
+    if (texts.length === 0) return;
+    const blob = new Blob([texts.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transcriptions-${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    flashButton(exportBtn, '✓', 'wa-tr-icon-btn--success', 1500);
   });
 
   copyAllBtn.addEventListener('click', () => {

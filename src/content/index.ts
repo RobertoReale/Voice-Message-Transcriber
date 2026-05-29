@@ -20,6 +20,17 @@ const panel = initPanel();
 // ready before the user first plays a voice message.
 void chrome.runtime.sendMessage({ type: 'PRELOAD_MODEL' }).catch(() => {});
 
+// Sync silent mode to injected script
+void chrome.storage.local.get(STORAGE_KEYS.silentMode).then(res => {
+  window.postMessage({ source: 'WA_TRANSCRIBER_CONTENT', type: 'SYNC_SILENT_MODE', silentMode: !!res[STORAGE_KEYS.silentMode] }, window.location.origin);
+});
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local' && changes[STORAGE_KEYS.silentMode]) {
+    window.postMessage({ source: 'WA_TRANSCRIBER_CONTENT', type: 'SYNC_SILENT_MODE', silentMode: !!changes[STORAGE_KEYS.silentMode].newValue }, window.location.origin);
+  }
+});
+
 // ── Helpers ────────────────────────────────────────────────────────────
 
 function float32ToBase64(float32: Float32Array): string {
@@ -130,8 +141,9 @@ async function decodeAudioToFloat32(
 }
 
 async function handleAudioBlob(blobUrl: string): Promise<void> {
-  const prefs = await chrome.storage.local.get(STORAGE_KEYS.selectedLanguage);
+  const prefs = await chrome.storage.local.get([STORAGE_KEYS.selectedLanguage, STORAGE_KEYS.enableTimestamps]);
   const lang = prefs[STORAGE_KEYS.selectedLanguage];
+  const returnTimestamps = !!prefs[STORAGE_KEYS.enableTimestamps];
   if (!lang || lang === 'auto') {
     console.warn('[WA Transcriber] Cannot transcribe: language not selected.');
     showLanguagePromptInPanel();
@@ -223,7 +235,7 @@ async function handleAudioBlob(blobUrl: string): Promise<void> {
       }
     });
 
-    port.postMessage({ type: 'TRANSCRIBE', pcmBase64, hash });
+    port.postMessage({ type: 'TRANSCRIBE', pcmBase64, hash, returnTimestamps });
   });
 
   if (text) {

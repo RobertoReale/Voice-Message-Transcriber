@@ -207,11 +207,44 @@ export function createSettings(): SettingsArea {
     langPromptBanner.hidden = true;
   });
 
+  // ── Toggles (Timestamps & Silent Mode) ───────────────────────────
+  const togglesContainer = document.createElement('div');
+  togglesContainer.className = 'wa-tr-settings-toggles';
+  togglesContainer.style.marginTop = '16px';
+  togglesContainer.style.marginBottom = '16px';
+  togglesContainer.style.display = 'flex';
+  togglesContainer.style.flexDirection = 'column';
+  togglesContainer.style.gap = '8px';
+
+  function createToggle(label: string, key: string): HTMLInputElement {
+    const labelEl = document.createElement('label');
+    labelEl.style.display = 'flex';
+    labelEl.style.alignItems = 'center';
+    labelEl.style.gap = '8px';
+    labelEl.style.fontSize = '13px';
+    labelEl.style.cursor = 'pointer';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.addEventListener('change', () => {
+      void chrome.storage.local.set({ [key]: checkbox.checked });
+    });
+
+    labelEl.append(checkbox, label);
+    togglesContainer.appendChild(labelEl);
+    return checkbox;
+  }
+
+  const timestampsToggle = createToggle(S.labelTimestamps, STORAGE_KEYS.enableTimestamps);
+  const silentModeToggle = createToggle(S.labelSilentMode, STORAGE_KEYS.silentMode);
+
   // ── Load persisted state ─────────────────────────────────────────
   void chrome.storage.local.get([
     STORAGE_KEYS.selectedModel,
     STORAGE_KEYS.selectedLanguage,
     STORAGE_KEYS.downloadedModels,
+    STORAGE_KEYS.enableTimestamps,
+    STORAGE_KEYS.silentMode,
   ]).then((res) => {
     const rawModel = res[STORAGE_KEYS.selectedModel] as string | undefined;
     const savedModel: ModelId = MODEL_IDS.includes(rawModel as ModelId)
@@ -222,6 +255,8 @@ export function createSettings(): SettingsArea {
 
     for (const id of downloaded) downloadedModelIds.add(id);
     langSelect.value = savedLang;
+    timestampsToggle.checked = !!res[STORAGE_KEYS.enableTimestamps];
+    silentModeToggle.checked = !!res[STORAGE_KEYS.silentMode];
     setActiveModel(savedModel); // also calls updateDownloadButton
   });
 
@@ -233,6 +268,7 @@ export function createSettings(): SettingsArea {
     settingsNote,
     langLabel,
     langSelect,
+    togglesContainer,
     downloadBtn,
     deleteBtn,
     downloadProgress,

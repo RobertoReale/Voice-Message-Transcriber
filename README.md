@@ -152,6 +152,14 @@ Key inference settings that reduce hallucinations and repetition loops:
 
 ---
 
+## Roadmap / Future Ideas
+
+- **Summarization:** Use a local SLM (Small Language Model) via WebGPU to summarize very long voice messages into bullet points.
+- **Built-in Translation:** Use Whisper's native `task: "translate"` to automatically translate foreign language voice messages to English (or your native language) on the fly.
+- **Speaker Diarization:** Separate and label text by different speakers (e.g., "Speaker 1", "Speaker 2") for group audio or calls.
+
+---
+
 ## Development
 
 ```bash
