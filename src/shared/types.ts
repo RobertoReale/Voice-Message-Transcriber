@@ -65,7 +65,7 @@ export type ExtensionMessage =
   /** Broadcast to all WA tabs when user clicks Stop — lets content script suppress the "no text" fallback. */
   | { type: 'TRANSCRIPTION_STOPPED' }
   | { type: 'MODEL_DOWNLOAD_PROGRESS'; progress: number }
-  | { type: 'STATUS_UPDATE'; status: string }
+  | { type: 'STATUS_UPDATE'; status: string; hash?: string }
   | { type: 'PRELOAD_MODEL' }
   /** Sent by offscreen when a model finishes loading (downloaded + in memory). */
   | { type: 'MODEL_LOADED'; modelId: string }

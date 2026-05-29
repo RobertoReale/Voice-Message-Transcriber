@@ -89,7 +89,7 @@ export function addTranscription(container: HTMLElement, text: string): void {
         hint.textContent = S.clickToCopy;
         entry.classList.remove('wa-tr-entry--copied');
       }, 1500);
-    });
+    }).catch(console.error);
   });
 
   // ── Insert ───────────────────────────────────────────────────────

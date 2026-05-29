@@ -61,7 +61,7 @@ export function initPanel(): HTMLElement {
       const settingsBtn = panel!.querySelector('.wa-tr-btn-group button[title="' + S.tipSettings + '"]');
       if (settingsBtn) settingsBtn.classList.add('wa-tr-icon-btn--active');
     }
-  });
+  }).catch(console.error);
 
   // ── Header ─────────────────────────────────────────────────────
   const header = document.createElement('div');
@@ -81,11 +81,11 @@ export function initPanel(): HTMLElement {
     pauseBtn.textContent = isPaused ? '▶️' : '⏸️';
     pauseBtn.title = isPaused ? S.tipResume : S.tipPause;
     pauseBtn.classList.toggle('wa-tr-icon-btn--active', isPaused);
-  });
+  }).catch(console.error);
   pauseBtn.addEventListener('click', () => {
     void chrome.storage.local.get(STORAGE_KEYS.isPaused).then(res => {
-      void chrome.storage.local.set({ [STORAGE_KEYS.isPaused]: !res[STORAGE_KEYS.isPaused] });
-    });
+      void chrome.storage.local.set({ [STORAGE_KEYS.isPaused]: !res[STORAGE_KEYS.isPaused] }).catch(console.error);
+    }).catch(console.error);
   });
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === 'local' && changes[STORAGE_KEYS.isPaused]) {
@@ -109,11 +109,11 @@ export function initPanel(): HTMLElement {
     const isSilent = !!res[STORAGE_KEYS.silentMode];
     silentModeBtn.textContent = isSilent ? '🔇' : '🔊';
     silentModeBtn.classList.toggle('wa-tr-icon-btn--active', isSilent);
-  });
+  }).catch(console.error);
   silentModeBtn.addEventListener('click', () => {
     void chrome.storage.local.get(STORAGE_KEYS.silentMode).then(res => {
-      void chrome.storage.local.set({ [STORAGE_KEYS.silentMode]: !res[STORAGE_KEYS.silentMode] });
-    });
+      void chrome.storage.local.set({ [STORAGE_KEYS.silentMode]: !res[STORAGE_KEYS.silentMode] }).catch(console.error);
+    }).catch(console.error);
   });
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === 'local' && changes[STORAGE_KEYS.silentMode]) {
@@ -145,7 +145,7 @@ export function initPanel(): HTMLElement {
   panel.append(header, settingsInstance.element, contentEl);
   document.body.appendChild(panel);
   dragController = makeDraggable(panel, header, (left, top) => {
-    void chrome.storage.local.set({ [STORAGE_KEYS.panelPosition]: { left, top } });
+    void chrome.storage.local.set({ [STORAGE_KEYS.panelPosition]: { left, top } }).catch(console.error);
   });
 
   // ── Event wiring ───────────────────────────────────────────────
@@ -154,7 +154,7 @@ export function initPanel(): HTMLElement {
   });
 
   stopBtnEl.addEventListener('click', () => {
-    void chrome.runtime.sendMessage({ type: 'STOP_TRANSCRIPTION' });
+    void chrome.runtime.sendMessage({ type: 'STOP_TRANSCRIPTION' }).catch(console.error);
     flashButton(stopBtnEl!, '✓', 'wa-tr-icon-btn--success', 1000);
   });
 
@@ -187,7 +187,7 @@ export function initPanel(): HTMLElement {
     if (texts.length === 0) return;
     void navigator.clipboard.writeText(texts.join('\n\n')).then(() => {
       flashButton(copyAllBtn, '✓', 'wa-tr-icon-btn--success', 1500);
-    });
+    }).catch(console.error);
   });
 
   clearListBtn.addEventListener('click', () => {
@@ -217,7 +217,7 @@ export function initPanel(): HTMLElement {
       // Tell the content script to clear its in-memory blob-URL dedup set so
       // replaying the same voice message re-triggers transcription.
       window.dispatchEvent(new CustomEvent('wa-transcriber:cache-cleared'));
-    })();
+    })().catch(console.error);
   });
 
   return panel;

@@ -26,7 +26,7 @@ void chrome.runtime.sendMessage({ type: 'PRELOAD_MODEL' }).catch(() => {});
 // Sync silent mode to injected script
 void chrome.storage.local.get(STORAGE_KEYS.silentMode).then(res => {
   window.postMessage({ source: 'WA_TRANSCRIBER_CONTENT', type: 'SYNC_SILENT_MODE', silentMode: !!res[STORAGE_KEYS.silentMode] }, window.location.origin);
-});
+}).catch(console.error);
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'local' && changes[STORAGE_KEYS.silentMode]) {
@@ -91,8 +91,8 @@ window.addEventListener('message', (event) => {
     }
 
     // Fetch immediately — WhatsApp may revoke the blob URL shortly after assigning it
-    void handleAudioBlob(blobUrl);
-  });
+    void handleAudioBlob(blobUrl).catch(console.error);
+  }).catch(console.error);
 });
 
 // Decode OGG/Opus to 16 kHz mono Float32 PCM here in the content script rather
@@ -114,7 +114,7 @@ async function decodeAudioToFloat32(
     try {
       audioBuffer = await audioCtx.decodeAudioData(buffer);
     } finally {
-      void audioCtx.close();
+      void audioCtx.close().catch(console.error);
     }
     // .slice() produces an owned Float32Array so its .buffer can be safely transferred
     const float32 = audioBuffer.getChannelData(0).slice();
@@ -271,8 +271,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
     showStatus(S.downloadingModel(message.progress));
     notifyDownloadProgress(message.progress);
   } else if (message.type === 'STATUS_UPDATE') {
-    if ((message as any).hash && panel) {
-      updatePendingEntry(panel, (message as any).hash, message.status);
+    if (message.hash && panel) {
+      updatePendingEntry(panel, message.hash, message.status);
     } else {
       showStatus(message.status);
     }
