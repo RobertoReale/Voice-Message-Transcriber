@@ -117,10 +117,19 @@ export function createSettings(): SettingsArea {
     const cfg = MODEL_CONFIGS[id];
     const btn = document.createElement('button');
     btn.className = 'wa-tr-model-btn';
-    btn.innerHTML =
-      `<span class="wa-tr-model-badge">${cfg.badge}</span> ` +
-      `<strong class="wa-tr-model-name">${cfg.label}</strong>` +
-      `<span class="wa-tr-model-desc">${cfg.desc}</span>`;
+    const badgeSpan = document.createElement('span');
+    badgeSpan.className = 'wa-tr-model-badge';
+    badgeSpan.textContent = cfg.badge;
+
+    const nameStrong = document.createElement('strong');
+    nameStrong.className = 'wa-tr-model-name';
+    nameStrong.textContent = cfg.label;
+
+    const descSpan = document.createElement('span');
+    descSpan.className = 'wa-tr-model-desc';
+    descSpan.textContent = cfg.desc;
+
+    btn.append(badgeSpan, ' ', nameStrong, descSpan);
 
     btn.addEventListener('click', () => {
       void chrome.storage.local.set({ [STORAGE_KEYS.selectedModel]: id });

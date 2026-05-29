@@ -63,6 +63,10 @@ window.addEventListener('message', (event) => {
   const { blobUrl } = event.data as { blobUrl: string };
   if (processedBlobs.has(blobUrl)) return;
   processedBlobs.add(blobUrl);
+  if (processedBlobs.size > 100) {
+    const firstItem = processedBlobs.values().next().value;
+    if (firstItem) processedBlobs.delete(firstItem);
+  }
 
   // Fetch immediately — WhatsApp may revoke the blob URL shortly after assigning it
   void handleAudioBlob(blobUrl);
@@ -77,10 +81,14 @@ async function decodeAudioToFloat32(
 ): Promise<{ float32: Float32Array; durationS: number; rms: number } | null> {
   try {
     const audioCtx = new AudioContext({ sampleRate: 16000 });
-    const audioBuffer = await audioCtx.decodeAudioData(buffer);
+    let audioBuffer;
+    try {
+      audioBuffer = await audioCtx.decodeAudioData(buffer);
+    } finally {
+      void audioCtx.close();
+    }
     // .slice() produces an owned Float32Array so its .buffer can be safely transferred
     const float32 = audioBuffer.getChannelData(0).slice();
-    void audioCtx.close();
 
     const durationS = float32.length / 16000;
 

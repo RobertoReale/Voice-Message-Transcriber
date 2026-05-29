@@ -178,18 +178,26 @@ function base64ToFloat32(base64: string): Float32Array {
 // Whisper loops always manifest as the SAME phrase repeated CONSECUTIVELY.
 // We detect runs of ≥3 identical adjacent segments and cut there.
 function deduplicateRepetitions(text: string): string {
-  const segs = text
-    .split(/(?:[.!?;]\s+|\s+-\s+)/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 2);
+  const parts = text.split(/([.!?;]\s+|\s+-\s+)/);
+  if (parts.length < 3) return text;
+
+  const segs: string[] = [];
+  const puncts: string[] = [];
+  for (let i = 0; i < parts.length; i += 2) {
+    if (parts[i].trim().length > 0) {
+      segs.push(parts[i]);
+      puncts.push(parts[i + 1] || '');
+    }
+  }
+
   if (segs.length < 3) return text;
 
   let runKey = '';
   let runCount = 0;
   let loopStart = -1;
   for (let i = 0; i < segs.length; i++) {
-    const key = segs[i].toLowerCase().replace(/\s+/g, ' ');
-    if (key === runKey) {
+    const key = segs[i].toLowerCase().replace(/\s+/g, ' ').trim();
+    if (key === runKey && key.length > 2) {
       runCount++;
       if (runCount >= 3) {
         loopStart = i - (runCount - 1) + 1;
@@ -202,7 +210,12 @@ function deduplicateRepetitions(text: string): string {
   }
 
   if (loopStart < 0) return text;
-  return segs.slice(0, loopStart).join('. ').replace(/\.\s*\./g, '.').trim();
+
+  let result = '';
+  for (let i = 0; i < loopStart; i++) {
+    result += segs[i] + puncts[i];
+  }
+  return result.trim();
 }
 
 function logFloat32Stats(float32: Float32Array): void {
