@@ -10,7 +10,7 @@ import { S } from '../shared/strings';
 
 /** Supported transcription languages shown in the dropdown. */
 const LANGUAGES: ReadonlyArray<{ value: string; label: string }> = [
-  { value: 'auto', label: S.autoDetect },
+  { value: '', label: S.selectLanguagePlaceholder },
   { value: 'italian', label: '🇮🇹 Italiano' },
   { value: 'english', label: '🇬🇧 English' },
   { value: 'spanish', label: '🇪🇸 Español' },
@@ -30,7 +30,9 @@ export interface SettingsArea {
   /** The container element to insert into the panel DOM. */
   element: HTMLElement;
   /** Toggle visibility. Returns `true` if now visible, `false` if hidden. */
-  toggle(): boolean;
+  toggle(forceShow?: boolean): boolean;
+  /** Show the language selection prompt banner. */
+  showLanguagePrompt(): void;
   /** Called when a model finishes loading — updates the download button state. */
   onModelLoaded(modelId: string): void;
   /** Called with download progress (0-100) so the settings panel shows feedback. */
@@ -49,6 +51,19 @@ export function createSettings(): SettingsArea {
   const container = document.createElement('div');
   container.className = 'wa-tr-settings';
   container.hidden = true;
+
+  // ── Language Prompt Banner ───────────────────────────────────────
+  const langPromptBanner = document.createElement('div');
+  langPromptBanner.className = 'wa-tr-lang-prompt-banner';
+  langPromptBanner.textContent = S.promptSelectLanguage;
+  langPromptBanner.hidden = true;
+  langPromptBanner.style.backgroundColor = '#fff3cd';
+  langPromptBanner.style.color = '#856404';
+  langPromptBanner.style.padding = '8px';
+  langPromptBanner.style.marginBottom = '12px';
+  langPromptBanner.style.borderRadius = '4px';
+  langPromptBanner.style.fontSize = '13px';
+  langPromptBanner.style.fontWeight = '500';
 
   // ── Model label ──────────────────────────────────────────────────
   const modelLabel = document.createElement('div');
@@ -181,6 +196,7 @@ export function createSettings(): SettingsArea {
     const opt = document.createElement('option');
     opt.value = value;
     opt.textContent = label;
+    if (value === '') opt.disabled = true;
     langSelect.appendChild(opt);
   }
 
@@ -188,6 +204,7 @@ export function createSettings(): SettingsArea {
     void chrome.storage.local.set({
       [STORAGE_KEYS.selectedLanguage]: langSelect.value,
     });
+    langPromptBanner.hidden = true;
   });
 
   // ── Load persisted state ─────────────────────────────────────────
@@ -210,6 +227,7 @@ export function createSettings(): SettingsArea {
 
   // ── Assemble ─────────────────────────────────────────────────────
   container.append(
+    langPromptBanner,
     modelLabel,
     modelRow,
     settingsNote,
@@ -222,9 +240,17 @@ export function createSettings(): SettingsArea {
 
   return {
     element: container,
-    toggle(): boolean {
-      container.hidden = !container.hidden;
+    toggle(forceShow?: boolean): boolean {
+      if (forceShow !== undefined) {
+        container.hidden = !forceShow;
+      } else {
+        container.hidden = !container.hidden;
+      }
       return !container.hidden;
+    },
+    showLanguagePrompt(): void {
+      langPromptBanner.hidden = false;
+      langSelect.focus();
     },
     onModelLoaded(modelId: string): void {
       isDownloading = false;

@@ -26,6 +26,8 @@ export const S = {
   downloadModel: '⬇ Download / load selected model',
   modelDownloaded: '✓ Model ready',
   autoDetect: '🌐 Auto (detect language)',
+  promptSelectLanguage: 'Please select a language to enable transcriptions.',
+  selectLanguagePlaceholder: 'Select a language...',
 
   // Content-script status messages
   decodingAudio: 'Decoding audio...',

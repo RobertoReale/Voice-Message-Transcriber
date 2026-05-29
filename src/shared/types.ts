@@ -36,7 +36,7 @@ export const MODEL_CONFIGS: Record<ModelId, ModelConfig> = {
 export const MODEL_IDS = Object.keys(MODEL_CONFIGS) as ModelId[];
 
 export const DEFAULT_MODEL: ModelId = 'onnx-community/whisper-small';
-export const DEFAULT_LANGUAGE = 'auto';
+export const DEFAULT_LANGUAGE = '';
 
 // ── Storage keys (avoids magic strings) ────────────────────────────────
 

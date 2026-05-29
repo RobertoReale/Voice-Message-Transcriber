@@ -37,13 +37,26 @@ export function initPanel(): HTMLElement {
   panel.style.display = 'none';
 
   // Restore saved position asynchronously, clamped to current viewport.
-  void chrome.storage.local.get(STORAGE_KEYS.panelPosition).then((res) => {
+  // Also check if language is selected on load.
+  void chrome.storage.local.get([STORAGE_KEYS.panelPosition, STORAGE_KEYS.selectedLanguage]).then((res) => {
     const saved = res[STORAGE_KEYS.panelPosition] as { left: string; top: string } | undefined;
     if (saved && panel) {
       const leftPx = Math.min(Math.max(0, parseInt(saved.left, 10)), window.innerWidth - 240);
       const topPx  = Math.min(Math.max(0, parseInt(saved.top,  10)), window.innerHeight - 60);
       panel.style.left = `${leftPx}px`;
       panel.style.top  = `${topPx}px`;
+    }
+
+    const savedLang = res[STORAGE_KEYS.selectedLanguage];
+    if (!savedLang || savedLang === 'auto') {
+      panel!.style.display = '';
+      settingsInstance?.toggle(true);
+      settingsInstance?.showLanguagePrompt();
+      const contentEl = panel!.querySelector<HTMLElement>('#wa-tr-content');
+      if (contentEl) contentEl.style.display = 'none';
+      // Highlight the settings button by finding it in the DOM
+      const settingsBtn = panel!.querySelector('.wa-tr-btn-group button[title="' + S.tipSettings + '"]');
+      if (settingsBtn) settingsBtn.classList.add('wa-tr-icon-btn--active');
     }
   });
 
@@ -156,6 +169,22 @@ export function togglePanel(): void {
     return;
   }
   panel.style.display = panel.style.display === 'none' ? '' : 'none';
+}
+
+/**
+ * Force show the panel, open the settings, and display the language prompt.
+ */
+export function showLanguagePromptInPanel(): void {
+  if (!panel || !document.contains(panel)) {
+    initPanel();
+  }
+  panel!.style.display = '';
+  settingsInstance?.toggle(true);
+  settingsInstance?.showLanguagePrompt();
+  const contentEl = panel!.querySelector<HTMLElement>('#wa-tr-content');
+  if (contentEl) contentEl.style.display = 'none';
+  const settingsBtn = panel!.querySelector('.wa-tr-btn-group button[title="' + S.tipSettings + '"]');
+  if (settingsBtn) settingsBtn.classList.add('wa-tr-icon-btn--active');
 }
 
 /**

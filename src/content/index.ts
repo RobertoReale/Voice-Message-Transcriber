@@ -8,9 +8,10 @@ import {
   notifyModelLoadFailed,
   notifyDownloadProgress,
   setTranscribing,
+  showLanguagePromptInPanel,
 } from '../ui/panel';
 import { S } from '../shared/strings';
-import type { ExtensionMessage } from '../shared/types';
+import { STORAGE_KEYS, type ExtensionMessage } from '../shared/types';
 
 // ── Initialise panel (hidden) and start preloading model on page load ──
 const panel = initPanel();
@@ -80,7 +81,13 @@ async function decodeAudioToFloat32(
   buffer: ArrayBuffer
 ): Promise<{ float32: Float32Array; durationS: number; rms: number } | null> {
   try {
-    const audioCtx = new AudioContext({ sampleRate: 16000 });
+    let audioCtx: AudioContext;
+    try {
+      audioCtx = new AudioContext({ sampleRate: 16000 });
+    } catch (e) {
+      console.error('[WA Transcriber] AudioContext creation failed (user interaction might be required):', e);
+      return null;
+    }
     let audioBuffer;
     try {
       audioBuffer = await audioCtx.decodeAudioData(buffer);
@@ -123,6 +130,14 @@ async function decodeAudioToFloat32(
 }
 
 async function handleAudioBlob(blobUrl: string): Promise<void> {
+  const prefs = await chrome.storage.local.get(STORAGE_KEYS.selectedLanguage);
+  const lang = prefs[STORAGE_KEYS.selectedLanguage];
+  if (!lang || lang === 'auto') {
+    console.warn('[WA Transcriber] Cannot transcribe: language not selected.');
+    showLanguagePromptInPanel();
+    return;
+  }
+
   let buffer: ArrayBuffer;
 
   try {

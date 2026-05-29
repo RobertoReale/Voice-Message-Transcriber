@@ -161,6 +161,12 @@ chrome.runtime.onConnect.addListener((port) => {
     const language =
       (prefs[STORAGE_KEYS.selectedLanguage] as string | undefined) || DEFAULT_LANGUAGE;
 
+    if (!language || language === 'auto') {
+      console.warn('[WA Transcriber SW] Transcription blocked: no language selected.');
+      try { port.postMessage({ type: 'TRANSCRIBE_RESULT', text: '' }); } catch {}
+      return;
+    }
+
     let text = '';
     try {
       text = await sendToOffscreen(message.pcmBase64!, modelId, language);
