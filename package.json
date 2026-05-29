@@ -1,0 +1,22 @@
+{
+  "name": "whatsapp-web-transcriber",
+  "version": "1.0.0",
+  "description": "Transcribe WhatsApp Web voice messages locally with Whisper — no audio sent to external servers",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.3.3",
+    "vite": "^5.2.0",
+    "vite-plugin-static-copy": "^1.0.0"
+  }
+}
