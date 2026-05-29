@@ -69,11 +69,57 @@ export function initPanel(): HTMLElement {
   title.className = 'wa-tr-title';
   title.textContent = S.title;
 
+  const pauseBtn = iconBtn('⏸️', S.tipPause);
+  pauseBtn.style.fontSize = '12px';
+
+  // Set initial state and sync
+  void chrome.storage.local.get(STORAGE_KEYS.isPaused).then(res => {
+    const isPaused = !!res[STORAGE_KEYS.isPaused];
+    pauseBtn.textContent = isPaused ? '▶️' : '⏸️';
+    pauseBtn.title = isPaused ? S.tipResume : S.tipPause;
+    pauseBtn.classList.toggle('wa-tr-icon-btn--active', isPaused);
+  });
+  pauseBtn.addEventListener('click', () => {
+    void chrome.storage.local.get(STORAGE_KEYS.isPaused).then(res => {
+      void chrome.storage.local.set({ [STORAGE_KEYS.isPaused]: !res[STORAGE_KEYS.isPaused] });
+    });
+  });
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'local' && changes[STORAGE_KEYS.isPaused]) {
+      const isPaused = !!changes[STORAGE_KEYS.isPaused].newValue;
+      pauseBtn.textContent = isPaused ? '▶️' : '⏸️';
+      pauseBtn.title = isPaused ? S.tipResume : S.tipPause;
+      pauseBtn.classList.toggle('wa-tr-icon-btn--active', isPaused);
+    }
+  });
+
   const exportBtn   = iconBtn('💾', S.tipExport);
   const copyAllBtn  = iconBtn('📋', S.tipCopyAll);
   const clearListBtn = iconBtn('🗑', S.tipClearList);
   const clearCacheBtn = iconBtn('↺', S.tipClearCache);
   clearCacheBtn.style.fontSize = '16px';
+  const silentModeBtn = iconBtn('🔊', S.labelSilentMode);
+  silentModeBtn.style.fontSize = '14px';
+
+  // Set initial state and sync
+  void chrome.storage.local.get(STORAGE_KEYS.silentMode).then(res => {
+    const isSilent = !!res[STORAGE_KEYS.silentMode];
+    silentModeBtn.textContent = isSilent ? '🔇' : '🔊';
+    silentModeBtn.classList.toggle('wa-tr-icon-btn--active', isSilent);
+  });
+  silentModeBtn.addEventListener('click', () => {
+    void chrome.storage.local.get(STORAGE_KEYS.silentMode).then(res => {
+      void chrome.storage.local.set({ [STORAGE_KEYS.silentMode]: !res[STORAGE_KEYS.silentMode] });
+    });
+  });
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'local' && changes[STORAGE_KEYS.silentMode]) {
+      const isSilent = !!changes[STORAGE_KEYS.silentMode].newValue;
+      silentModeBtn.textContent = isSilent ? '🔇' : '🔊';
+      silentModeBtn.classList.toggle('wa-tr-icon-btn--active', isSilent);
+    }
+  });
+
   const settingsBtn = iconBtn('⚙', S.tipSettings);
   settingsBtn.style.fontSize = '14px';
   const closeBtn = iconBtn('✕', S.tipClose);
@@ -85,7 +131,7 @@ export function initPanel(): HTMLElement {
 
   const btnGroup = document.createElement('div');
   btnGroup.className = 'wa-tr-btn-group';
-  btnGroup.append(stopBtnEl, exportBtn, copyAllBtn, clearListBtn, clearCacheBtn, settingsBtn, closeBtn);
+  btnGroup.append(stopBtnEl, pauseBtn, exportBtn, copyAllBtn, silentModeBtn, clearListBtn, clearCacheBtn, settingsBtn, closeBtn);
 
   header.append(title, btnGroup);
 

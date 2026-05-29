@@ -24,6 +24,9 @@ Transcription runs locally using [Whisper](https://openai.com/research/whisper) 
 - **Three Whisper models** — Tiny (~40 MB), Small (~130 MB, default), Large v3 Turbo (~800 MB)
 - **14 languages** — plus auto-detect
 - **Model management** — download and delete models directly from the settings panel
+- **Silent Mode** — automatically mute the voice message while transcribing
+- **Export** — save all transcriptions to a text file
+- **Timestamps** — optional [MM:SS] markers in the text
 - **Floating panel** — draggable, persistent across navigation, close and reopen any time
 - **Copy** — click any entry to copy it, or use "Copy all"
 - **Stop** — cancel an in-progress transcription without unloading the model from memory
@@ -66,8 +69,11 @@ Then load the extension in Chrome:
 
 | Button | Action |
 |--------|--------|
-| ⚙️ | Settings — model and language selector |
+| ⚙️ | Settings — model, language, timestamps and silent mode selector |
+| 💾 | Export all transcriptions to a text file |
+| ⏸️/▶️ | Pause/Resume automatic transcription (saves CPU when you only want to listen) |
 | 📋 | Copy all transcriptions |
+| 🔊/🔇 | Toggle Silent Mode (mutes the audio of the voice message when played) |
 | 🗑 | Clear the list (cache preserved — same audio won't re-transcribe) |
 | ↺ | Clear cache — forces re-transcription on next play |
 | ⏹ | Stop current transcription |

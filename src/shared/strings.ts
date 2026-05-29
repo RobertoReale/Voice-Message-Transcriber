@@ -12,6 +12,8 @@ export const S = {
   emptyHint2: 'to see it transcribed here',
 
   // Header button tooltips
+  tipPause: 'Pause auto-transcription',
+  tipResume: 'Resume auto-transcription',
   tipExport: 'Export transcriptions to file',
   tipCopyAll: 'Copy all transcriptions',
   tipClearList: 'Clear visible transcriptions (cache is preserved)',

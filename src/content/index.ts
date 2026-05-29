@@ -73,15 +73,23 @@ window.addEventListener('message', (event) => {
   if (event.data?.type !== 'AUDIO_SRC_SET') return;
 
   const { blobUrl } = event.data as { blobUrl: string };
-  if (processedBlobs.has(blobUrl)) return;
-  processedBlobs.add(blobUrl);
-  if (processedBlobs.size > 100) {
-    const firstItem = processedBlobs.values().next().value;
-    if (firstItem) processedBlobs.delete(firstItem);
-  }
+  
+  void chrome.storage.local.get(STORAGE_KEYS.isPaused).then(res => {
+    if (res[STORAGE_KEYS.isPaused]) {
+      console.log('[WA Transcriber] Transcription paused by user.');
+      return;
+    }
 
-  // Fetch immediately — WhatsApp may revoke the blob URL shortly after assigning it
-  void handleAudioBlob(blobUrl);
+    if (processedBlobs.has(blobUrl)) return;
+    processedBlobs.add(blobUrl);
+    if (processedBlobs.size > 100) {
+      const firstItem = processedBlobs.values().next().value;
+      if (firstItem) processedBlobs.delete(firstItem);
+    }
+
+    // Fetch immediately — WhatsApp may revoke the blob URL shortly after assigning it
+    void handleAudioBlob(blobUrl);
+  });
 });
 
 // Decode OGG/Opus to 16 kHz mono Float32 PCM here in the content script rather

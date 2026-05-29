@@ -22,9 +22,11 @@ window.addEventListener('message', (event) => {
   Object.defineProperty(HTMLMediaElement.prototype, 'src', {
     set(value: string) {
       if (typeof value === 'string' && this instanceof HTMLAudioElement) {
-        if (isSilentMode) {
-          this.muted = true;
-        }
+        // Explicitly set muted to true or false. 
+        // This ensures that if WhatsApp reuses the same audio element for a subsequent
+        // voice message after the user disabled Silent Mode, the audio is properly unmuted.
+        this.muted = isSilentMode;
+        
         const isBlobAudio = value.startsWith('blob:');
         const isDiscordVoice =
           value.includes('cdn.discordapp.com') && value.includes('voice-message');

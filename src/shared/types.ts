@@ -49,6 +49,7 @@ export const STORAGE_KEYS = {
   panelPosition: 'panelPosition',
   enableTimestamps: 'enableTimestamps',
   silentMode: 'silentMode',
+  isPaused: 'isPaused',
 } as const;
 
 // ── Extension messages (discriminated union) ───────────────────────────
